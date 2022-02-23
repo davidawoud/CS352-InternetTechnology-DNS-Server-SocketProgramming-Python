@@ -3,8 +3,9 @@ import time
 import socket
 import select
 import errno
+import sys
 
-def rs():
+def rs(rsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2ListenPort):
     # TS1 Client
     try:
         ts1_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -12,13 +13,10 @@ def rs():
     except socket.error as err:
         print('socket open error: {} \n'.format(err))
         exit()
-        
-    # Define the port on which you want to connect to the server
-    port = 50007
-    localhost_addr = socket.gethostbyname(socket.gethostname())
 
     # connect to the server on local machine
-    server_binding = (localhost_addr, port)
+    localhost_addr = socket.gethostbyname(ts1Hostname)
+    server_binding = (localhost_addr, ts1ListenPort)
     ts1_client.connect(server_binding)
     ts1_client.setblocking(0)
     ts1_client.settimeout(5)
@@ -31,13 +29,10 @@ def rs():
     except socket.error as err:
         print('socket open error: {} \n'.format(err))
         exit()
-        
-    # Define the port on which you want to connect to the server
-    port = 50014
-    localhost_addr = socket.gethostbyname(socket.gethostname())
 
     # connect to the server on local machine
-    server_binding = (localhost_addr, port)
+    localhost_addr = socket.gethostbyname(ts2Hostname)
+    server_binding = (localhost_addr, ts2ListenPort)
     ts2_client.connect(server_binding)
     ts2_client.setblocking(0)
     ts2_client.settimeout(5)
@@ -51,7 +46,7 @@ def rs():
         print('socket open error: {}\n'.format(err))
         exit()
 
-    server_binding = ('', 50021)
+    server_binding = ('', rsListenPort)
     rs.bind(server_binding)
     rs.listen(5)
     host = socket.gethostname()
@@ -79,9 +74,9 @@ def rs():
         time.sleep(1)
         try:
             data_client = csockid.recv(200).decode('utf-8')
-            print("Looking Up: {}".format(data_client))
             if (data_client == "q"):
                 break
+            print("Looking Up: {}".format(data_client))
         except socket.timeout as e:
             break
 
@@ -128,5 +123,13 @@ def rs():
     exit()
     
 if __name__ == "__main__":
-    t1 = threading.Thread(name='rs', target=rs)
+    #(rsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2ListenPort)
+    rsListenPort = int(sys.argv[1])
+    ts1Hostname = sys.argv[2]
+    ts1ListenPort = int(sys.argv[3])
+    ts2Hostname = sys.argv[4]
+    ts2ListenPort = int(sys.argv[5])
+    rs_args = [rsListenPort, ts1Hostname, ts1ListenPort, ts2Hostname, ts2ListenPort]
+
+    t1 = threading.Thread(name='rs', target=rs, args=(rs_args))
     t1.start()

@@ -1,24 +1,18 @@
 import threading
-import time
-import random
-import select
 import socket
-import errno
+import sys
 
-def client():
+def client(rsHostname, rsListenPort):
     try:
         cs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("[C]: Client socket created")
     except socket.error as err:
         print('socket open error: {} \n'.format(err))
         exit()
-        
-    # Define the port on which you want to connect to the server
-    port = 50021
-    localhost_addr = socket.gethostbyname(socket.gethostname())
 
     # connect to the server on local machine
-    server_binding = (localhost_addr, port)
+    localhost_addr = socket.gethostbyname(rsHostname)
+    server_binding = (localhost_addr, rsListenPort)
     cs.connect(server_binding)
     
     # Receive data from the RS server
@@ -43,5 +37,9 @@ def client():
     exit()
 
 if __name__ == "__main__":
-    t2 = threading.Thread(name='client', target=client)
+    rsHostname = sys.argv[1]
+    rsListenPort = int(sys.argv[2])
+    client_args = [rsHostname, rsListenPort]
+
+    t2 = threading.Thread(name='client', target=client, args=(client_args))
     t2.start()

@@ -1,7 +1,8 @@
 import threading
 import socket
+import sys
 
-def ts2():
+def ts2(ts2ListenPort):
     try:
         ts2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("[TS2]: TS2 socket created")
@@ -9,7 +10,7 @@ def ts2():
         print('socket open error: {}\n'.format(err))
         exit()
 
-    server_binding = ('', 50014)
+    server_binding = ('', ts2ListenPort)
     ts2.bind(server_binding)
     ts2.listen(1)
     host = socket.gethostname()
@@ -48,5 +49,7 @@ def ts2():
     exit()
     
 if __name__ == "__main__":
-    t1 = threading.Thread(name='ts2', target=ts2)
+    ts2ListenPort = int(sys.argv[1])
+    ts2_args = [ts2ListenPort]
+    t1 = threading.Thread(name='ts2', target=ts2, args=(ts2_args))
     t1.start()
