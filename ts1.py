@@ -19,28 +19,27 @@ def ts1():
     csockid, addr = ts1.accept()
     print ("[TS1]: Got a connection request from a client at {}".format(addr))
 
-    # send a intro mets1age to the client.  
-    msg = "Welcome to TS1!"
-    csockid.send(msg.encode('utf-8'))
+    # Open DNS file
     dns = open('PROJ2-DNSTS1.txt','r')
     lines = dns.readlines()
     dns.close()
     dns_dict = {}
     for line in lines:
         v = line.strip() + " IN"
-        k = line.strip().split()[0]
+        k = line.strip().split()[0].lower()
         dns_dict[k] = v.strip()
     
+    # recive queries from the client
     while True:
         try:
             data_client=csockid.recv(200).decode('utf-8')
             if (data_client == "q"):
                 print("[TS1]: TS1 Timed Out")
                 break
-            response = dns_dict[data_client]
+            response = dns_dict[data_client.lower()]
             csockid.send(response.encode('utf-8'))
         except KeyError as err:
-            print("No match found! {}".format(data_client.encode('utf-8')))
+            print("No match found! {}".format(data_client))
 
 
     # Close the TS1 socket
